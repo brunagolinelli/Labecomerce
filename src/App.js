@@ -2,7 +2,7 @@ import React from "react";
 import Carrinho from "./Componentes/Carrinho/Carrinho";
 import Filtros from "./Componentes/Filtros/Filtros";
 import Produtos from "./Componentes/Home/Produtos/Produtos";
-import { ConjuntoDeComponentes } from "./estiloDoApp";
+import { ConjuntoDeComponentes, Container, Header, BotaoCarrinhoHeader, BadgeCarrinho, Overlay } from "./estiloDoApp";
 import { pacoteDeProdutos } from "./pacoteDeProdutos";
 
 class App extends React.Component {
@@ -11,9 +11,25 @@ class App extends React.Component {
     filtroMaximo: 100000,
     filtroBuscaPorNome: "",
     ordenacao: "Crescente",
-    carrinho: [], 
-    valorTotal: 0, 
-    mostrarCarrinho: false,
+    carrinho: [],
+    valorTotal: 0,
+    mostrarCarrinho: window.innerWidth > 1024,
+  };
+
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  }
+
+  handleResize = () => {
+    if (window.innerWidth > 1024) {
+      this.setState({ mostrarCarrinho: true });
+    } else if (window.innerWidth <= 1024 && this.state.mostrarCarrinho) {
+      // Mantém o estado atual em mobile se já estava aberto
+    }
   };
 
   manipularValorDoFiltroMinimo = (event) => {
@@ -38,8 +54,8 @@ class App extends React.Component {
     const pacotesFiltradosMinimo = pacoteDeProdutos.filter((produto) => {
       if (this.state.filtroMinimo) {
         return produto.price >= this.state.filtroMinimo;
-      }else{
-        return produto
+      } else {
+        return produto;
       }
     });
 
@@ -52,7 +68,7 @@ class App extends React.Component {
     });
 
     const pacoteFiltrado = pacotesFiltradosMaximo.filter((produto) => {
-      return produto.name.includes(this.state.filtroBuscaPorNome);
+      return produto.name.toLowerCase().includes(this.state.filtroBuscaPorNome.toLowerCase());
     });
 
     return pacoteFiltrado;
@@ -68,8 +84,8 @@ class App extends React.Component {
     const produtoNoCarrinho = this.state.carrinho.filter((item) => {
       if (item.id === produto.id) {
         return item;
-      }else{
-        return false
+      } else {
+        return false;
       }
     });
 
@@ -100,9 +116,9 @@ class App extends React.Component {
       const novoCarrinho = this.state.carrinho.filter(
         (item) => item.id !== itemParaRemover.id
       );
-  
+
       this.removerValorTotal(itemParaRemover.price * itemParaRemover.quantidade);
-  
+
       this.setState({
         carrinho: novoCarrinho,
       });
@@ -114,13 +130,13 @@ class App extends React.Component {
         return item;
       });
       this.removerValorTotal(itemParaRemover.price);
-  
+
       this.setState({
         carrinho: novoCarrinho,
       });
     }
   };
-  
+
 
   adicionarValorTotal = (valor) => {
     this.setState({
@@ -133,9 +149,9 @@ class App extends React.Component {
       console.warn("Valor inválido para remoção:", valor);
       return;
     }
-  
+
     this.setState((prevState) => ({
-      valorTotal: Math.max(0, prevState.valorTotal - valor), 
+      valorTotal: Math.max(0, prevState.valorTotal - valor),
     }));
   };
   alternarCarrinho = () => {
@@ -143,30 +159,50 @@ class App extends React.Component {
   };
   render() {
     const produtosFiltrados = this.filtrarProdutos();
+    const quantidadeItensCarrinho = this.state.carrinho.reduce((total, item) => total + item.quantidade, 0);
 
     return (
       <ConjuntoDeComponentes>
-    
-        <Filtros
-          minimo={this.state.filtroMinimo}
-          maximo={this.state.filtroMaximo}
-          buscaPorNome={this.state.filtroBuscaPorNome}
-          onChangeMinimo={this.manipularValorDoFiltroMinimo}
-          onChangeMaximo={this.manipularValorDoFiltroMaximo}
-          onChangeBuscaPorNome={this.manipularValorDoFiltroBuscaPorNome}
-        />
-        <Produtos
-          quantidade={produtosFiltrados.length}
-          onChangeCabecalho={this.ordenarProdutos}
-          ordenacao={this.state.ordenacao}
-          produtos={produtosFiltrados}
-          onClick={this.adicionarProdutoNoCarrinho}
-        />
-        <Carrinho
-          carrinho={this.state.carrinho}
-          valorTotal={this.state.valorTotal}
-          removerItemDoCarrinho={this.removerItemDoCarrinho}
-        />
+        {this.state.mostrarCarrinho && window.innerWidth <= 1024 && (
+          <Overlay onClick={this.alternarCarrinho} />
+        )}
+        <Container>
+          <Header>
+            <h1>🛍️ LabEcommerce</h1>
+            <BotaoCarrinhoHeader onClick={this.alternarCarrinho}>
+              <span>🛒</span>
+              <span>Carrinho</span>
+              {quantidadeItensCarrinho > 0 && (
+                <BadgeCarrinho>{quantidadeItensCarrinho}</BadgeCarrinho>
+              )}
+            </BotaoCarrinhoHeader>
+          </Header>
+
+          <Filtros
+            minimo={this.state.filtroMinimo}
+            maximo={this.state.filtroMaximo}
+            buscaPorNome={this.state.filtroBuscaPorNome}
+            onChangeMinimo={this.manipularValorDoFiltroMinimo}
+            onChangeMaximo={this.manipularValorDoFiltroMaximo}
+            onChangeBuscaPorNome={this.manipularValorDoFiltroBuscaPorNome}
+          />
+
+          <Produtos
+            quantidade={produtosFiltrados.length}
+            onChangeCabecalho={this.ordenarProdutos}
+            ordenacao={this.state.ordenacao}
+            produtos={produtosFiltrados}
+            onClick={this.adicionarProdutoNoCarrinho}
+          />
+
+          <Carrinho
+            carrinho={this.state.carrinho}
+            valorTotal={this.state.valorTotal}
+            removerItemDoCarrinho={this.removerItemDoCarrinho}
+            fecharCarrinho={window.innerWidth <= 1024 ? this.alternarCarrinho : null}
+            mostrar={this.state.mostrarCarrinho}
+          />
+        </Container>
       </ConjuntoDeComponentes>
     );
   }

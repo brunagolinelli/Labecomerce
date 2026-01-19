@@ -1,13 +1,13 @@
 import React from "react";
-import { ConjuntoDeItens } from "./estiloDosItens";
+import { ConjuntoDeItens, BadgeQuantidade, NomeProduto, ConjuntoDeItensButton } from "./estiloDosItens";
 
 class Itens extends React.Component {
   render() {
     return (
       <ConjuntoDeItens>
-        <p>{this.props.quantidade}x</p>
-        <p>{this.props.nome}</p>
-        <button onClick={this.props.onClick}>Remover</button>
+        <BadgeQuantidade>{this.props.quantidade || 0}x</BadgeQuantidade>
+        <NomeProduto>{this.props.nome}</NomeProduto>
+        <ConjuntoDeItensButton onClick={this.props.onClick} title="Remover item">−</ConjuntoDeItensButton>
       </ConjuntoDeItens>
     );
   }

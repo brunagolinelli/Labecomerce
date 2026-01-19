@@ -1,5 +1,5 @@
 import React from "react";
-import { ConjuntoDoCarrinho } from "./estiloDoCarrinho";
+import { ConjuntoDoCarrinho, CabecalhoCarrinho, BotaoFechar, MensagemVazio, ConjuntoDoCarrinhoContent, ValorTotal } from "./estiloDoCarrinho";
 import Itens from "./Itens/Itens";
 
 class Carrinho extends React.Component {
@@ -17,11 +17,26 @@ class Carrinho extends React.Component {
         );
       });
 
+    if (this.props.mostrar === false) {
+      return null;
+    }
+
     return (
       <ConjuntoDoCarrinho>
-        <h2>Carrinho:</h2>
-        <div>{itensDoCarrinho}</div>
-        <p>Valor total: R$ {this.props.valorTotal},00</p>
+        <CabecalhoCarrinho>
+          <h2>Carrinho:</h2>
+          {this.props.fecharCarrinho && (
+            <BotaoFechar onClick={this.props.fecharCarrinho}>✕</BotaoFechar>
+          )}
+        </CabecalhoCarrinho>
+        {this.props.carrinho && this.props.carrinho.length > 0 ? (
+          <>
+            <ConjuntoDoCarrinhoContent>{itensDoCarrinho}</ConjuntoDoCarrinhoContent>
+            <ValorTotal>Valor total: R$ {(this.props.valorTotal || 0).toLocaleString('pt-BR')},00</ValorTotal>
+          </>
+        ) : (
+          <MensagemVazio>Seu carrinho está vazio</MensagemVazio>
+        )}
       </ConjuntoDoCarrinho>
     );
   }

@@ -6,7 +6,8 @@ class Produtos extends React.Component {
   state = {
     mostrarCarrinho: false, 
   };
- alternarCarrinho = () => {
+
+  alternarCarrinho = () => {
     this.setState((prevState) => ({
       mostrarCarrinho: !prevState.mostrarCarrinho,
     }));
